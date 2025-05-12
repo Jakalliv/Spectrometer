@@ -1,0 +1,58 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sympy as sym
+import xraydb
+   #Il programma prende i dati di un fantasma, l'energia massima e minima, binnaggio ecc
+   #per estrapolare di dati della sorgente
+
+def phantom():
+    #Design del phantom, estratto da XrayDB
+    
+    return
+    
+#Hat function
+def phi_function(E,E_n,n):
+    En = E_n[n]
+    DE = E_n[1] - E_n[0]
+    m1 = np.zeros_like(E)
+    m2 = np.zeros_like(E)
+    m3 = np.zeros_like(E)
+
+    m1[np.where(abs(E - En)>DE)] = 1
+    m2[np.where((En - DE <= E) & (E <= En))] = 1
+    m3[np.where((En + DE >= E) & (En <= E))] = 1
+
+    f1 = np.zeros_like(E)
+    f2 = 1 + (E - En)/DE
+    f3 = 1 - (E - En)/DE
+    
+    return f1*m1 + f2*m2 + f3*m3
+
+
+def integral_Amn(element:str, E_n, hat, L ):
+    tot_A = np.zeros_like(E_n)
+    for i in range(len(E_n)):
+        tot_A[i] = E_n[i]*hat[i]*(np.exp((-L)*xraydb.material_mu(element, E_n[i])))
+        print(tot_A[i], E_n[i], hat[i], xraydb.material_mu(element, E_n[i]))
+    return tot_A
+
+Emax = 200
+Emin = 100
+Nbase = 200
+Npoints = 1000
+L = 10 
+E_n = np.linspace(Emin,Emax,Nbase) 
+E = np.linspace(Emin,Emax,Npoints)
+hat = phi_function(E,E_n,10)
+
+x = integral_Amn("Fe", E_n, hat, L)
+
+
+
+
+
+plt.figure()
+plt.plot(E,hat,"o")
+
+
+
